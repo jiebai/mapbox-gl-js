@@ -17,7 +17,8 @@ type Options = {
     element?: HTMLElement,
     offset?: PointLike,
     anchor?: Anchor,
-    color?: string
+    color?: string,
+    draggable?: boolean
 };
 
 /**
@@ -45,6 +46,7 @@ export default class Marker {
     _pos: ?Point;
     _color: ?string;
     _defaultMarker: boolean;
+    _draggable: boolean;
 
     constructor(options?: Options) {
         // For backward compatibility -- the constructor used to accept the element as a
@@ -53,10 +55,16 @@ export default class Marker {
             options = extend({element: options}, arguments[1]);
         }
 
-        bindAll(['_update', '_onMapClick'], this);
+        bindAll([
+          '_update',
+          '_onMove',
+          '_onUp',
+          '_onMapClick'
+        ], this);
 
         this._anchor = options && options.anchor || 'center';
         this._color = options && options.color || '#3FB1CE';
+        this._draggable = options && options.draggable || false;
 
         if (!options || !options.element) {
             this._defaultMarker = true;
@@ -170,6 +178,34 @@ export default class Marker {
         this._popup = null;
     }
 
+    setPositionDelta(clickPoint: Point, anchorPoint: Point) {
+      const deltaToAnchor = clickPoint.sub(anchorPoint);
+
+      return deltaToAnchor.add(this._offset);
+    }
+
+    _onMove(e: MouseEvent) {
+      this._pos = e.point.sub(this.positionDelta);
+      this._lngLat = this._map.unproject(this._pos);
+      this.setLngLat(this._lngLat);
+    }
+
+    _onUp(e: MouseEvent) {
+      this.positionDelta = null;
+      this._map.off('mousemove', this._onMove);
+    }
+
+    setAsDraggable() {
+      this._map.on('mousedown', (e) => {
+          if (this._element.contains(e.originalEvent.srcElement)) {
+            e.preventDefault();
+            this.positionDelta = this.setPositionDelta(e.point, this._pos);
+            this._map.on('mousemove', this._onMove);
+            this._map.once('mouseup', this._onUp);
+          }
+      });
+    }
+
     /**
      * Attaches the marker to a map
      * @param {Map} map
@@ -181,6 +217,9 @@ export default class Marker {
         map.getCanvasContainer().appendChild(this._element);
         map.on('move', this._update);
         map.on('moveend', this._update);
+        if (this._draggable) {
+          this.setAsDraggable();
+        }
         this._update();
 
         // If we attached the `click` listener to the marker element, the popup
