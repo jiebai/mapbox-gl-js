@@ -48,7 +48,7 @@ export default class Marker extends Evented {
     _color: ?string;
     _defaultMarker: boolean;
     _draggable: boolean;
-    _state: 'pending' | 'active' | 'inactive'; // used for handling drag events
+    _state: 'inactive' | 'pending' | 'active'; // used for handling drag events
 
     constructor(options?: Options) {
         super();
@@ -460,5 +460,13 @@ export default class Marker extends Evented {
         }
 
         return this;
+    }
+
+    /**
+     * Returns the marker's draggable property
+     * @returns {boolean} `this._draggable`
+     */
+    isDraggable() {
+      return this._draggable;
     }
 }
