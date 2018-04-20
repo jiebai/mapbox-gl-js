@@ -179,58 +179,76 @@ export default class Marker extends Evented {
         this._popup = null;
     }
 
-    setPositionDelta(clickPoint: Point, anchorPoint: Point) {
-      const deltaToAnchor = clickPoint.sub(anchorPoint);
+    // TODO: make this private? (not on *this*)
+    calculatePositionDelta(clickPoint: Point, anchorPoint: Point) {
+        const deltaToAnchor = clickPoint.sub(anchorPoint);
 
-      return deltaToAnchor.add(this._offset);
+        return deltaToAnchor.add(this._offset);
     }
 
     _onDragStart() {
-      /**
-       * Fired when dragging starts
-       *
-       * @event dragstart
-       * @memberof Marker
-       * @instance
-       * @type {Object}
-       * @property {Marker} marker object that is being dragged
-       */
-      this.fire(new Event('marker.dragstart'));
+        /**
+         * Fired when dragging starts
+         *
+         * @event dragstart
+         * @memberof Marker
+         * @instance
+         * @type {Object}
+         * @property {Marker} marker object that is being dragged
+         */
+        this.fire(new Event('dragstart'));
     }
 
     _onMove(e: MouseEvent) {
-      this._pos = e.point.sub(this.positionDelta);
-      this._lngLat = this._map.unproject(this._pos);
-      this.setLngLat(this._lngLat);
+        this._pos = e.point.sub(this.positionDelta);
+        this._lngLat = this._map.unproject(this._pos);
+        this.setLngLat(this._lngLat);
+
+        /**
+         * Fired while dragging
+         *
+         * @event drag
+         * @memberof Marker
+         * @instance
+         * @type {Object}
+         * @property {Marker} marker object that is being dragged
+         */
+        this.fire(new Event('drag'));
     }
 
     _onUp(e: MouseEvent) {
-      // TODO: suppress click event so that popups don't toggle on drag
-      this.positionDelta = null;
-      this._map.off('mousemove', this._onMove);
+        // TODO: suppress click event so that popups don't toggle on drag
+        this.positionDelta = null;
+        this._map.off('mousemove', this._onMove);
 
-      /**
-       * Fired when the marker is finished being dragged
-       *
-       * @event dragend
-       * @memberof Marker
-       * @instance
-       * @type {Object}
-       * @property {Marker} marker object that was dragged
-       */
-      this.fire(new Event('marker.dragend'));
+        /**
+         * Fired when the marker is finished being dragged
+         *
+         * @event dragend
+         * @memberof Marker
+         * @instance
+         * @type {Object}
+         * @property {Marker} marker object that was dragged
+         */
+        this.fire(new Event('dragend'));
     }
 
-    setAsDraggable() {
-      this._map.on('mousedown', (e) => {
-          if (this._element.contains(e.originalEvent.srcElement)) {
-            e.preventDefault();
-            this.positionDelta = this.setPositionDelta(e.point, this._pos);
-            this._map.once('mousemove', this._onDragStart);
-            this._map.on('mousemove', this._onMove);
-            this._map.once('mouseup', this._onUp);
-          }
-      });
+    setAsDraggable(shouldBeDraggable) {
+        if (shouldBeDraggable) {
+          this._map.on('mousedown', (e) => {
+            if (this._element.contains(e.originalEvent.srcElement)) {
+              e.preventDefault();
+              this.positionDelta = this.calculatePositionDelta(e.point, this._pos);
+              // TODO: clean this up. onMove will fire before onDragStart
+              // and onDragStart and onUp will fire even when no drag has occurred
+              this._map.once('mousemove', this._onDragStart);
+              this._map.on('mousemove', this._onMove);
+              this._map.once('mouseup', this._onUp);
+            }
+          });
+        } else {
+          // TODO: remove event listener if it exists and draggable is turned off
+        }
     }
 
     /**
@@ -245,7 +263,7 @@ export default class Marker extends Evented {
         map.on('move', this._update);
         map.on('moveend', this._update);
         if (this._draggable) {
-          this.setAsDraggable();
+          this.setAsDraggable(true);
         }
         this._update();
 
