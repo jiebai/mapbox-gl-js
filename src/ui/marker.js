@@ -7,7 +7,7 @@ import Point from '@mapbox/point-geometry';
 import smartWrap from '../util/smart_wrap';
 import { bindAll, extend } from '../util/util';
 import { type Anchor, anchorTranslate, applyAnchorClass } from './anchor';
-
+import { Event, Evented } from '../util/evented';
 import type Map from './map';
 import type Popup from './popup';
 import type {LngLatLike} from "../geo/lng_lat";
@@ -36,7 +36,7 @@ type Options = {
  *   .addTo(map);
  * @see [Add custom icons with Markers](https://www.mapbox.com/mapbox-gl-js/example/custom-marker-icons/)
  */
-export default class Marker {
+export default class Marker extends Evented {
     _map: Map;
     _anchor: Anchor;
     _offset: Point;
@@ -57,6 +57,7 @@ export default class Marker {
 
         bindAll([
           '_update',
+          '_onDragStart',
           '_onMove',
           '_onUp',
           '_onMapClick'
@@ -184,6 +185,19 @@ export default class Marker {
       return deltaToAnchor.add(this._offset);
     }
 
+    _onDragStart() {
+      /**
+       * Fired when dragging starts
+       *
+       * @event dragstart
+       * @memberof Marker
+       * @instance
+       * @type {Object}
+       * @property {Marker} marker object that is being dragged
+       */
+      this.fire(new Event('marker.dragstart'));
+    }
+
     _onMove(e: MouseEvent) {
       this._pos = e.point.sub(this.positionDelta);
       this._lngLat = this._map.unproject(this._pos);
@@ -191,8 +205,20 @@ export default class Marker {
     }
 
     _onUp(e: MouseEvent) {
+      // TODO: suppress click event so that popups don't toggle on drag
       this.positionDelta = null;
       this._map.off('mousemove', this._onMove);
+
+      /**
+       * Fired when the marker is finished being dragged
+       *
+       * @event dragend
+       * @memberof Marker
+       * @instance
+       * @type {Object}
+       * @property {Marker} marker object that was dragged
+       */
+      this.fire(new Event('marker.dragend'));
     }
 
     setAsDraggable() {
@@ -200,6 +226,7 @@ export default class Marker {
           if (this._element.contains(e.originalEvent.srcElement)) {
             e.preventDefault();
             this.positionDelta = this.setPositionDelta(e.point, this._pos);
+            this._map.once('mousemove', this._onDragStart);
             this._map.on('mousemove', this._onMove);
             this._map.once('mouseup', this._onUp);
           }
