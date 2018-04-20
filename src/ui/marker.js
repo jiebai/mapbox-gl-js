@@ -220,6 +220,7 @@ export default class Marker extends Evented {
         // TODO: suppress click event so that popups don't toggle on drag
         this.positionDelta = null;
         this._map.off('mousemove', this._onMove);
+        this._map.off('touchmove', this._onMove);
 
         // only fire dragend if it was preceded by at least one drag event
         if (this._state === 'active') {
@@ -240,12 +241,12 @@ export default class Marker extends Evented {
 
     setAsDraggable(shouldBeDraggable) {
         if (shouldBeDraggable) {
-            this._map.on('mousedown', (e) => {
+            const addDragHandler = (e) => {
                 if (this._element.contains(e.originalEvent.srcElement)) {
                     e.preventDefault();
 
                     // We need to calculate the pixel distance between the click point
-                    // and the marker position with the offset accounted for. Then we
+                    // and the marker position, with the offset accounted for. Then we
                     // can subtract this distance from the mousemove event's position
                     // to calculate the new marker position.
                     // If we don't do this, the marker 'jumps' to the click position
@@ -254,9 +255,14 @@ export default class Marker extends Evented {
 
                     this._state = 'pending';
                     this._map.on('mousemove', this._onMove);
+                    this._map.on('touchmove', this._onMove);
                     this._map.once('mouseup', this._onUp);
+                    this._map.once('touchend', this._onUp);
                 }
-            });
+            };
+
+            this._map.on('mousedown', addDragHandler);
+            this._map.on('touchstart', addDragHandler);
         } else {
           // TODO: remove event listener if it exists and draggable is turned off
         }
