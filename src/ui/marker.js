@@ -51,6 +51,7 @@ export default class Marker extends Evented {
     _state: 'pending' | 'active' | 'inactive'; // used for handling drag events
 
     constructor(options?: Options) {
+        super();
         // For backward compatibility -- the constructor used to accept the element as a
         // required first argument, before it was made optional.
         if (arguments[0] instanceof window.HTMLElement || arguments.length === 2) {
@@ -58,11 +59,11 @@ export default class Marker extends Evented {
         }
 
         bindAll([
-          '_update',
-          '_onMove',
-          '_onUp',
-          '_addDragHandler',
-          '_onMapClick'
+            '_update',
+            '_onMove',
+            '_onUp',
+            '_addDragHandler',
+            '_onMapClick'
         ], this);
 
         this._anchor = options && options.anchor || 'center';
@@ -369,18 +370,18 @@ export default class Marker extends Evented {
         // this can't be on mousedown because that event doesn't necessarily
         // imply that a drag is about to happen.
         if (this._state === 'pending') {
-          this._state = 'active';
+            this._state = 'active';
 
-          /**
-           * Fired when dragging starts
-           *
-           * @event dragstart
-           * @memberof Marker
-           * @instance
-           * @type {Object}
-           * @property {Marker} marker object that is being dragged
-           */
-          this.fire(new Event('dragstart'));
+            /**
+             * Fired when dragging starts
+             *
+             * @event dragstart
+             * @memberof Marker
+             * @instance
+             * @type {Object}
+             * @property {Marker} marker object that is being dragged
+             */
+            this.fire(new Event('dragstart'));
         }
 
         /**
@@ -403,16 +404,16 @@ export default class Marker extends Evented {
 
         // only fire dragend if it was preceded by at least one drag event
         if (this._state === 'active') {
-          /**
-          * Fired when the marker is finished being dragged
-          *
-          * @event dragend
-          * @memberof Marker
-          * @instance
-          * @type {Object}
-          * @property {Marker} marker object that was dragged
-          */
-          this.fire(new Event('dragend'));
+            /**
+            * Fired when the marker is finished being dragged
+            *
+            * @event dragend
+            * @memberof Marker
+            * @instance
+            * @type {Object}
+            * @property {Marker} marker object that was dragged
+            */
+            this.fire(new Event('dragend'));
         }
 
         this._state = 'inactive';
