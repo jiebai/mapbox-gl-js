@@ -30,7 +30,7 @@ type Options = {
  *   The default is `'center'`.
  * @param options.offset The offset in pixels as a {@link PointLike} object to apply relative to the element's center. Negatives indicate left and up.
  * @param options.color The color to use for the default marker if options.element is not provided. The default is light blue.
- * @param options.draggable A boolean indicating whether or not a marker is able to be dragged to a new position on the map
+ * @param options.draggable A boolean indicating whether or not a marker is able to be dragged to a new position on the map.
  * @example
  * var marker = new mapboxgl.Marker()
  *   .setLngLat([30.5, 50.5])
@@ -48,7 +48,7 @@ export default class Marker extends Evented {
     _color: ?string;
     _defaultMarker: boolean;
     _draggable: boolean;
-    _state: 'pending' | 'active'; // used for handling drag events
+    _state: 'pending' | 'active' | 'inactive'; // used for handling drag events
 
     constructor(options?: Options) {
         // For backward compatibility -- the constructor used to accept the element as a
@@ -59,15 +59,16 @@ export default class Marker extends Evented {
 
         bindAll([
           '_update',
-          '_onDragStart',
           '_onMove',
           '_onUp',
+          '_addDragHandler',
           '_onMapClick'
         ], this);
 
         this._anchor = options && options.anchor || 'center';
         this._color = options && options.color || '#3FB1CE';
         this._draggable = options && options.draggable || false;
+        this._state = 'inactive';
 
         if (!options || !options.element) {
             this._defaultMarker = true;
@@ -181,93 +182,6 @@ export default class Marker extends Evented {
         this._popup = null;
     }
 
-    _onMove(e: MouseEvent) {
-        this._pos = e.point.sub(this.positionDelta);
-        this._lngLat = this._map.unproject(this._pos);
-        this.setLngLat(this._lngLat);
-
-        // make sure dragstart only fires on the first move event after mousedown
-        // this can't be on mousedown because that event doesn't necessarily
-        // imply that a drag is about to happen
-        if (this._state === 'pending') {
-          this._state = 'active';
-
-          /**
-           * Fired when dragging starts
-           *
-           * @event dragstart
-           * @memberof Marker
-           * @instance
-           * @type {Object}
-           * @property {Marker} marker object that is being dragged
-           */
-          this.fire(new Event('dragstart'));
-        }
-
-        /**
-         * Fired while dragging
-         *
-         * @event drag
-         * @memberof Marker
-         * @instance
-         * @type {Object}
-         * @property {Marker} marker object that is being dragged
-         */
-        this.fire(new Event('drag'));
-    }
-
-    _onUp(e: MouseEvent) {
-        // TODO: suppress click event so that popups don't toggle on drag
-        this.positionDelta = null;
-        this._map.off('mousemove', this._onMove);
-        this._map.off('touchmove', this._onMove);
-
-        // only fire dragend if it was preceded by at least one drag event
-        if (this._state === 'active') {
-          /**
-          * Fired when the marker is finished being dragged
-          *
-          * @event dragend
-          * @memberof Marker
-          * @instance
-          * @type {Object}
-          * @property {Marker} marker object that was dragged
-          */
-          this.fire(new Event('dragend'));
-        }
-
-        this._state = 'enabled';
-    }
-
-    setAsDraggable(shouldBeDraggable) {
-        if (shouldBeDraggable) {
-            const addDragHandler = (e) => {
-                if (this._element.contains(e.originalEvent.srcElement)) {
-                    e.preventDefault();
-
-                    // We need to calculate the pixel distance between the click point
-                    // and the marker position, with the offset accounted for. Then we
-                    // can subtract this distance from the mousemove event's position
-                    // to calculate the new marker position.
-                    // If we don't do this, the marker 'jumps' to the click position
-                    // creating a jarring UX effect.
-                    this.positionDelta = e.point.sub(this._pos).add(this._offset);
-
-                    this._state = 'pending';
-                    this._map.on('mousemove', this._onMove);
-                    this._map.on('touchmove', this._onMove);
-                    this._map.once('mouseup', this._onUp);
-                    this._map.once('touchend', this._onUp);
-                }
-            };
-
-            this._map.on('mousedown', addDragHandler);
-            this._map.on('touchstart', addDragHandler);
-        } else {
-          // TODO: remove event listener if it exists and draggable is turned off
-        }
-    }
-
     /**
      * Attaches the marker to a map
      * @param {Map} map
@@ -279,7 +193,7 @@ export default class Marker extends Evented {
         map.getCanvasContainer().appendChild(this._element);
         map.on('move', this._update);
         map.on('moveend', this._update);
-        this.setAsDraggable(this._draggable);
+        this.setDraggable(this._draggable);
         this._update();
 
         // If we attached the `click` listener to the marker element, the popup
@@ -443,6 +357,107 @@ export default class Marker extends Evented {
     setOffset(offset: PointLike) {
         this._offset = Point.convert(offset);
         this._update();
+        return this;
+    }
+
+    _onMove(e: MouseEvent | TouchEvent) {
+        this._pos = e.point.sub(this.positionDelta);
+        this._lngLat = this._map.unproject(this._pos);
+        this.setLngLat(this._lngLat);
+
+        // make sure dragstart only fires on the first move event after mousedown.
+        // this can't be on mousedown because that event doesn't necessarily
+        // imply that a drag is about to happen.
+        if (this._state === 'pending') {
+          this._state = 'active';
+
+          /**
+           * Fired when dragging starts
+           *
+           * @event dragstart
+           * @memberof Marker
+           * @instance
+           * @type {Object}
+           * @property {Marker} marker object that is being dragged
+           */
+          this.fire(new Event('dragstart'));
+        }
+
+        /**
+         * Fired while dragging
+         *
+         * @event drag
+         * @memberof Marker
+         * @instance
+         * @type {Object}
+         * @property {Marker} marker object that is being dragged
+         */
+        this.fire(new Event('drag'));
+    }
+
+    _onUp(e: MouseEvent | TouchEvent) {
+        // TODO: suppress click event so that popups don't toggle on drag
+        this.positionDelta = null;
+        this._map.off('mousemove', this._onMove);
+        this._map.off('touchmove', this._onMove);
+
+        // only fire dragend if it was preceded by at least one drag event
+        if (this._state === 'active') {
+          /**
+          * Fired when the marker is finished being dragged
+          *
+          * @event dragend
+          * @memberof Marker
+          * @instance
+          * @type {Object}
+          * @property {Marker} marker object that was dragged
+          */
+          this.fire(new Event('dragend'));
+        }
+
+        this._state = 'inactive';
+    }
+
+    _addDragHandler(e: MouseEvent | TouchEvent) {
+        if (this._element.contains(e.originalEvent.srcElement)) {
+            e.preventDefault();
+
+            // We need to calculate the pixel distance between the click point
+            // and the marker position, with the offset accounted for. Then we
+            // can subtract this distance from the mousemove event's position
+            // to calculate the new marker position.
+            // If we don't do this, the marker 'jumps' to the click position
+            // creating a jarring UX effect.
+            this.positionDelta = e.point.sub(this._pos).add(this._offset);
+
+            this._state = 'pending';
+            this._map.on('mousemove', this._onMove);
+            this._map.on('touchmove', this._onMove);
+            this._map.once('mouseup', this._onUp);
+            this._map.once('touchend', this._onUp);
+        }
+    }
+
+    /**
+     * Sets the `draggable` property of the marker
+     * @param {boolean} [shouldBeDraggable=false] Turns drag functionality on/off
+     * @returns {Marker} `this`
+     */
+    setDraggable(shouldBeDraggable: Boolean) {
+        this._draggable = !!shouldBeDraggable; // convert possible undefined value to false
+
+        // handle case where map may not exist yet
+        // e.g. when setDraggable is called before addTo
+        if (this._map) {
+            if (shouldBeDraggable) {
+                this._map.on('mousedown', this._addDragHandler);
+                this._map.on('touchstart', this._addDragHandler);
+            } else {
+                this._map.off('mousedown', this._addDragHandler);
+                this._map.off('touchstart', this._addDragHandler);
+            }
+        }
+
         return this;
     }
 }
