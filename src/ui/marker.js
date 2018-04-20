@@ -439,7 +439,7 @@ export default class Marker extends Evented {
     }
 
     /**
-     * Sets the `draggable` property of the marker
+     * Sets the `draggable` property and functionality of the marker
      * @param {boolean} [shouldBeDraggable=false] Turns drag functionality on/off
      * @returns {Marker} `this`
      */
