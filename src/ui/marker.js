@@ -420,7 +420,7 @@ export default class Marker extends Evented {
     }
 
     _addDragHandler(e: MouseEvent | TouchEvent) {
-        if (this._element.contains(e.originalEvent.srcElement)) {
+        if (this._element.contains(e.originalEvent.target)) {
             e.preventDefault();
 
             // We need to calculate the pixel distance between the click point
