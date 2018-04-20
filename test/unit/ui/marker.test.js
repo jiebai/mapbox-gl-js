@@ -432,3 +432,66 @@ test('Marker with draggable:true moves to new position in response to a mouse-tr
   map.remove();
   t.end();
 });
+
+test('Marker with draggable:false does not move to new position in response to a mouse-triggered drag', (t) => {
+  const map = createMap();
+  const marker = new Marker({})
+      .setLngLat([0, 0])
+      .addTo(map);
+  const el = marker.getElement();
+  const startPos = map.project(marker.getLngLat());
+
+  simulate.mousedown(el);
+  simulate.mousemove(el);
+  simulate.mouseup(el);
+
+  const endPos = map.project(marker.getLngLat());
+
+  t.equal(startPos.x, endPos.x)
+  t.equal(startPos.y, endPos.y);
+
+  map.remove();
+  t.end();
+});
+
+test('Marker with draggable:true moves to new position in response to a touch-triggered drag', (t) => {
+  const map = createMap();
+  const marker = new Marker({draggable: true})
+      .setLngLat([0, 0])
+      .addTo(map);
+  const el = marker.getElement();
+  const startPos = map.project(marker.getLngLat());
+
+  simulate.touchstart(el);
+  simulate.touchmove(el);
+  simulate.touchend(el);
+
+  const endPos = map.project(marker.getLngLat());
+
+  t.notEqual(startPos.x, endPos.x)
+  t.notEqual(startPos.y, endPos.y);
+
+  map.remove();
+  t.end();
+});
+
+test('Marker with draggable:false does not move to new position in response to a touch-triggered drag', (t) => {
+  const map = createMap();
+  const marker = new Marker({})
+      .setLngLat([0, 0])
+      .addTo(map);
+  const el = marker.getElement();
+  const startPos = map.project(marker.getLngLat());
+
+  simulate.touchstart(el);
+  simulate.touchmove(el);
+  simulate.touchend(el);
+
+  const endPos = map.project(marker.getLngLat());
+
+  t.equal(startPos.x, endPos.x)
+  t.equal(startPos.y, endPos.y);
+
+  map.remove();
+  t.end();
+});
