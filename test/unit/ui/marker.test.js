@@ -421,13 +421,14 @@ test('Marker with draggable:true moves to new position in response to a mouse-tr
   const startPos = map.project(marker.getLngLat());
 
   simulate.mousedown(el);
-  simulate.mousemove(el);
+  simulate.mousemove(el, {clientX: startPos.x + 10, clientY: startPos.y + 10});
   simulate.mouseup(el);
 
   const endPos = map.project(marker.getLngLat());
+  console.log('startPos', startPos, 'endPos', endPos);
 
-  t.notEqual(startPos.x, endPos.x)
-  t.notEqual(startPos.y, endPos.y);
+  t.equal(endPos.x, startPos.x + 10);
+  t.equal(endPos.y, startPos.y + 10);
 
   map.remove();
   t.end();
