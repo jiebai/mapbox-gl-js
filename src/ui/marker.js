@@ -367,6 +367,8 @@ export default class Marker extends Evented {
         this._pos = e.point.sub(this.positionDelta);
         this._lngLat = this._map.unproject(this._pos);
         this.setLngLat(this._lngLat);
+        // suppress click event so that popups don't toggle on drag
+        this._element.style.pointerEvents = 'none';
 
         // make sure dragstart only fires on the first move event after mousedown.
         // this can't be on mousedown because that event doesn't necessarily
@@ -399,7 +401,8 @@ export default class Marker extends Evented {
     }
 
     _onUp(e: MouseEvent | TouchEvent) {
-        // TODO: suppress click event so that popups don't toggle on drag
+        // revert to normal pointer event handling
+        this._element.style.pointerEvents = 'auto';
         this.positionDelta = null;
         this._map.off('mousemove', this._onMove);
         this._map.off('touchmove', this._onMove);
