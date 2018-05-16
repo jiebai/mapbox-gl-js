@@ -23,14 +23,13 @@ type Options = {
 
 /**
  * Creates a marker component
- * @param options
- * @param options.element DOM element to use as a marker. The default is a light blue, droplet-shaped SVG marker.
- * @param options.anchor A string indicating the part of the Marker that should be positioned closest to the coordinate set via {@link Marker#setLngLat}.
+ * @param {Object} [options]
+ * @param {HTMLElement} [options.element] DOM element to use as a marker. The default is a light blue, droplet-shaped SVG marker.
+ * @param {string} [options.anchor='center'] A string indicating the part of the Marker that should be positioned closest to the coordinate set via {@link Marker#setLngLat}.
  *   Options are `'center'`, `'top'`, `'bottom'`, `'left'`, `'right'`, `'top-left'`, `'top-right'`, `'bottom-left'`, and `'bottom-right'`.
- *   The default is `'center'`.
- * @param options.offset The offset in pixels as a {@link PointLike} object to apply relative to the element's center. Negatives indicate left and up.
- * @param options.color The color to use for the default marker if options.element is not provided. The default is light blue.
- * @param options.draggable A boolean indicating whether or not a marker is able to be dragged to a new position on the map.
+ * @param {PointLike} [options.offset] The offset in pixels as a {@link PointLike} object to apply relative to the element's center. Negatives indicate left and up.
+ * @param {string} [options.color='#3FB1CE'] The color to use for the default marker if options.element is not provided. The default is light blue.
+ * @param {boolean} [options.draggable=false] A boolean indicating whether or not a marker is able to be dragged to a new position on the map.
  * @example
  * var marker = new mapboxgl.Marker()
  *   .setLngLat([30.5, 50.5])
