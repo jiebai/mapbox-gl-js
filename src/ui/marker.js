@@ -294,8 +294,8 @@ export default class Marker extends Evented {
         return this;
     }
 
-    _onMapClick(event: MapMouseEvent) {
-        const targetElement = event.originalEvent.target;
+    _onMapClick(e: MapMouseEvent) {
+        const targetElement = e.originalEvent.target;
         const element = this._element;
 
         if (this._popup && (targetElement === element || element.contains((targetElement: any)))) {
