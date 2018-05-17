@@ -6,6 +6,7 @@ type Listener = (Object) => any;
 type Listeners = { [string]: Array<Listener> };
 
 function _addEventListener(type: string, listener: Listener, listenerList: Listeners) {
+    _removeEventListener(type, listener, listenerList);
     listenerList[type] = listenerList[type] || [];
     listenerList[type].push(listener);
 }

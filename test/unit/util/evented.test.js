@@ -119,6 +119,17 @@ test('Evented', (t) => {
         t.end();
     });
 
+    t.test('on is idempotent', (t) => {
+      const evented = new Evented();
+      const listener = t.spy();
+      evented.on('a', listener);
+      evented.on('a', listener);
+      evented.on('a', listener);
+      evented.fire(new Event('a'));
+      t.ok(listener.calledOnce);
+      t.end();
+    });
+
     t.test('evented parents', (t) => {
 
         t.test('adds parents with "setEventedParent"', (t) => {
