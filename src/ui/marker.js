@@ -468,8 +468,8 @@ export default class Marker extends Evented {
     }
 
     /**
-     * Returns the marker's draggable property
-     * @returns {boolean} `this._draggable`
+     * Returns true if the marker can be dragged
+     * @returns {boolean}
      */
     isDraggable() {
         return this._draggable;
