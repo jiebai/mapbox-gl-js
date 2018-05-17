@@ -1291,7 +1291,7 @@ export default class extends React.Component {
                                                 expressions.
                                             </p>}
 
-                                        {group.expressions.map(({name, doc, type}, i) =>
+                                        {group.expressions.map(({name, doc, type, sdkSupport}, i) =>
                                             <div key={i} className='col12 clearfix pad0y pad2x space-top0'>
                                                 <span className='space-right'>
                                                     <a className='code'
@@ -1301,6 +1301,7 @@ export default class extends React.Component {
                                                 </span>
                                                 {type.map((overload, i) =>
                                                     <div key={i}>{highlightJavascript(renderSignature(name, overload))}</div>)}
+                                                {sdkSupport && <div className='space-bottom2'><SDKSupportTable {...sdkSupport} /></div>}
                                             </div>
                                         )}
                                     </div>
