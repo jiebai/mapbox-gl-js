@@ -11,7 +11,7 @@ import { Event, Evented } from '../util/evented';
 import type Map from './map';
 import type Popup from './popup';
 import type {LngLatLike} from "../geo/lng_lat";
-import type {MapMouseEvent} from './events';
+import type {MapMouseEvent, MapTouchEvent} from './events';
 
 type Options = {
     element?: HTMLElement,
@@ -48,6 +48,7 @@ export default class Marker extends Evented {
     _defaultMarker: boolean;
     _draggable: boolean;
     _state: 'inactive' | 'pending' | 'active'; // used for handling drag events
+    _positionDelta: ?number;
 
     constructor(options?: Options) {
         super();
@@ -362,8 +363,8 @@ export default class Marker extends Evented {
         return this;
     }
 
-    _onMove(e: MouseEvent | TouchEvent) {
-        this._pos = e.point.sub(this.positionDelta);
+    _onMove(e: MapMouseEvent | MapTouchEvent) {
+        this._pos = e.point.sub(this._positionDelta);
         this._lngLat = this._map.unproject(this._pos);
         this.setLngLat(this._lngLat);
         // suppress click event so that popups don't toggle on drag
@@ -399,10 +400,10 @@ export default class Marker extends Evented {
         this.fire(new Event('drag'));
     }
 
-    _onUp(e: MouseEvent | TouchEvent) {
+    _onUp() {
         // revert to normal pointer event handling
         this._element.style.pointerEvents = 'auto';
-        this.positionDelta = null;
+        this._positionDelta = null;
         this._map.off('mousemove', this._onMove);
         this._map.off('touchmove', this._onMove);
 
@@ -423,8 +424,8 @@ export default class Marker extends Evented {
         this._state = 'inactive';
     }
 
-    _addDragHandler(e: MouseEvent | TouchEvent) {
-        if (this._element.contains(e.originalEvent.target)) {
+    _addDragHandler(e: MapMouseEvent | MapTouchEvent) {
+        if (this._element.contains((e.originalEvent.target: any))) {
             e.preventDefault();
 
             // We need to calculate the pixel distance between the click point
@@ -433,7 +434,7 @@ export default class Marker extends Evented {
             // to calculate the new marker position.
             // If we don't do this, the marker 'jumps' to the click position
             // creating a jarring UX effect.
-            this.positionDelta = e.point.sub(this._pos).add(this._offset);
+            this._positionDelta = e.point.sub(this._pos).add(this._offset);
 
             this._state = 'pending';
             this._map.on('mousemove', this._onMove);
@@ -448,7 +449,7 @@ export default class Marker extends Evented {
      * @param {boolean} [shouldBeDraggable=false] Turns drag functionality on/off
      * @returns {Marker} `this`
      */
-    setDraggable(shouldBeDraggable: Boolean) {
+    setDraggable(shouldBeDraggable: boolean) {
         this._draggable = !!shouldBeDraggable; // convert possible undefined value to false
 
         // handle case where map may not exist yet
@@ -471,6 +472,6 @@ export default class Marker extends Evented {
      * @returns {boolean} `this._draggable`
      */
     isDraggable() {
-      return this._draggable;
+        return this._draggable;
     }
 }
