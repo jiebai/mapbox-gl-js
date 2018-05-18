@@ -266,6 +266,14 @@ class Painter {
         return new DepthMode(func || this.context.gl.LEQUAL, mask, [nearDepth, farDepth]);
     }
 
+    listImages() {
+      if (!this.imageManager) {
+        throw new Error('Style is not done loading');
+      }
+
+      return this.imageManager.listImages();
+    }
+
     render(style: Style, options: PainterOptions) {
         this.style = style;
         this.options = options;

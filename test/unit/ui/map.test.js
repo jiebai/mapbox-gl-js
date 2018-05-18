@@ -842,6 +842,44 @@ test('Map', (t) => {
         t.end();
     });
 
+    t.test('#listImages', (t) => {
+      const map = createMap();
+
+      map.on('load', () => {
+          const width = 64;
+          const bytesPerPixel = 4;
+          const data = new Uint8Array(width * width * bytesPerPixel);
+          const imageName = 'gradient';
+
+          for (let x = 0; x < width; x++) {
+              for (let y = 0; y < width; y++) {
+                  const offset = (y * width + x) * bytesPerPixel;
+                  data[offset + 0] = y / width * 255;
+                  data[offset + 1] = x / width * 255;
+                  data[offset + 2] = 128;
+                  data[offset + 3] = 255;
+              }
+          }
+
+          t.equals(map.listImages().length, 0);
+
+          map.addImage(imageName, {width, height: width, data});
+          const images = map.listImages();
+
+          t.equals(images.length, 1);
+          t.equals(images[0], imageName);
+          t.end();
+      });
+    });
+
+    t.test('#listImages throws an error if called before "load"', (t) => {
+        const map = createMap();
+        t.throws(() => {
+            map.listImages();
+        }, Error);
+        t.end();
+    });
+
     t.test('#queryRenderedFeatures', (t) => {
 
         t.test('if no arguments provided', (t) => {
