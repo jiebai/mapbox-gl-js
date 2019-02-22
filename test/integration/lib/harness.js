@@ -1,18 +1,17 @@
-'use strict';
-
 /* eslint-disable no-process-exit */
 
-const fs = require('fs');
-const path = require('path');
-const queue = require('d3-queue').queue;
-const colors = require('chalk');
-const template = require('lodash.template');
-const shuffler = require('shuffle-seed');
-const glob = require('glob');
+import path from 'path';
+import fs from 'fs';
+import glob from 'glob';
+import {shuffle} from 'shuffle-seed';
+import {queue} from 'd3-queue';
+import colors from 'chalk';
+import template from 'lodash.template';
+import createServer from './server';
 
-module.exports = function (directory, implementation, options, run) {
+export default function (directory, implementation, options, run) {
     const q = queue(1);
-    const server = require('./server')();
+    const server = createServer();
 
     const tests = options.tests || [];
     const ignores = options.ignores || {};
@@ -67,7 +66,7 @@ module.exports = function (directory, implementation, options, run) {
 
     if (options.shuffle) {
         console.log(colors.white(`* shuffle seed: `) + colors.bold(`${options.seed}`));
-        sequence = shuffler.shuffle(sequence, options.seed);
+        sequence = shuffle(sequence, options.seed);
     }
 
     q.defer(server.listen);
@@ -180,10 +179,15 @@ module.exports = function (directory, implementation, options, run) {
         const resultsTemplate = template(fs.readFileSync(path.join(__dirname, '..', 'results.html.tmpl'), 'utf8'));
         const itemTemplate = template(fs.readFileSync(path.join(directory, 'result_item.html.tmpl'), 'utf8'));
 
+        const stats = {};
+        for (const test of tests) {
+            stats[test.status] = (stats[test.status] || 0) + 1;
+        }
+
         const unsuccessful = tests.filter(test =>
             test.status === 'failed' || test.status === 'errored');
 
-        const resultsShell = resultsTemplate({ unsuccessful, tests, shuffle: options.shuffle, seed: options.seed })
+        const resultsShell = resultsTemplate({ unsuccessful, tests, stats, shuffle: options.shuffle, seed: options.seed })
             .split('<!-- results go here -->');
 
         const p = path.join(directory, options.recycleMap ? 'index-recycle-map.html' : 'index.html');
@@ -203,7 +207,7 @@ module.exports = function (directory, implementation, options, run) {
             });
         });
     });
-};
+}
 
 function write(stream, data, cb) {
     if (!stream.write(data)) {

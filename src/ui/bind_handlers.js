@@ -21,10 +21,11 @@ const handlers = {
     touchZoomRotate
 };
 
-export default function bindHandlers(map: Map, options: {interactive: boolean}) {
+export default function bindHandlers(map: Map, options: {interactive: boolean, clickTolerance: number}) {
     const el = map.getCanvasContainer();
     let contextMenuEvent = null;
     let mouseDown = false;
+    let startPos = null;
 
     for (const name in handlers) {
         (map: any)[name] = new handlers[name](map, options);
@@ -56,6 +57,7 @@ export default function bindHandlers(map: Map, options: {interactive: boolean}) 
 
     function onMouseDown(e: MouseEvent) {
         mouseDown = true;
+        startPos = DOM.mousePos(el, e);
 
         const mapEvent = new MapMouseEvent('mousedown', map, e);
         map.fire(mapEvent);
@@ -149,7 +151,10 @@ export default function bindHandlers(map: Map, options: {interactive: boolean}) 
     }
 
     function onClick(e: MouseEvent) {
-        map.fire(new MapMouseEvent('click', map, e));
+        const pos = DOM.mousePos(el, e);
+        if (pos.equals(startPos) || pos.dist(startPos) < options.clickTolerance) {
+            map.fire(new MapMouseEvent('click', map, e));
+        }
     }
 
     function onDblClick(e: MouseEvent) {
@@ -173,10 +178,18 @@ export default function bindHandlers(map: Map, options: {interactive: boolean}) 
             contextMenuEvent = e;
         }
 
-        e.preventDefault();
+        // prevent browser context menu when necessary; we don't allow it with rotation
+        // because we can't discern rotation gesture start from contextmenu on Mac
+        if (map.dragRotate.isEnabled() || map.listens('contextmenu')) {
+            e.preventDefault();
+        }
     }
 
     function onWheel(e: WheelEvent) {
+        if (options.interactive) {
+            map.stop();
+        }
+
         const mapEvent = new MapWheelEvent('wheel', map, e);
         map.fire(mapEvent);
 

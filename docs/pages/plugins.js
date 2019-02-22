@@ -28,6 +28,10 @@ const plugins = {
             "description": "enables users to compare two maps by swiping left and right",
             "example": "mapbox-gl-compare"
         },
+        "mapbox-gl-controls": {
+            "website": "https://github.com/bravecow/mapbox-gl-controls",
+            "description": "alternative basic map controls"
+        },
         "mapbox-gl-directions": {
             "website": "https://github.com/mapbox/mapbox-gl-directions",
             "description": "adds a control which allows users to plot driving, walking, and cycling directions on the map",
@@ -42,6 +46,18 @@ const plugins = {
             "website": "https://github.com/mapbox/mapbox-gl-geocoder",
             "description": "adds a Geocoder control to Mapbox GL JS",
             "example": "mapbox-gl-geocoder"
+        },
+        "mapbox-gl-infobox": {
+            "website": "https://github.com/el/infobox-control",
+            "description": "adds a control to display an infobox or a gradient"
+        },
+        "mapbox-gl-style-switcher": {
+            "website": "https://github.com/el/style-switcher",
+            "description": "adds a control to switch between styles"
+        },
+        "mapboxgl-minimap": {
+            "website": "https://github.com/aesqe/mapboxgl-minimap",
+            "description": "adds a control showing a miniature overview of the current map"
         }
     },
     "Map Rendering Plugins": {
@@ -53,6 +69,10 @@ const plugins = {
             "website": "https://github.com/mapbox/mapbox-gl-rtl-text",
             "description": "adds right-to-left text support to Mapbox GL JS",
             "example": "mapbox-gl-rtl-text"
+        },
+        "mapbox-gl-traffic": {
+            "website": "https://github.com/mapbox/mapbox-gl-traffic",
+            "description": "hide and show traffic layers on your map with an optional toggle button"
         },
         "deck.gl": {
             "website": "https://github.com/uber/deck.gl",
@@ -74,7 +94,19 @@ const plugins = {
         },
         "angular-mapboxgl-directive": {
             "website": "https://github.com/Naimikan/angular-mapboxgl-directive",
-            "description": md`provides an [Angular](https://angularjs.org/) directive for Mapbox GL JS`
+            "description": md`provides an [AngularJS](https://angularjs.org/) directive for Mapbox GL JS`
+        },
+        "ngx-mapbox-gl": {
+            "website": "https://github.com/Wykks/ngx-mapbox-gl",
+            "description": md`provides an [Angular](https://angular.io/) integration for Mapbox GL JS`
+        },
+        "elm-mapbox": {
+            "website": "https://package.elm-lang.org/packages/gampleman/elm-mapbox/latest/",
+            "description": md`provides an [Elm](https://elm-lang.org) integration for Mapbox GL JS`
+        },
+        "ember-mapbox-gl": {
+            "website": "https://github.com/kturney/ember-mapbox-gl",
+            "description": md`provides an [Ember](http://emberjs.com) integration for Mapbox GL JS`
         }
     },
     "Utility Libraries": {
@@ -85,6 +117,10 @@ const plugins = {
         "mapbox-gl-layer-groups": {
             "website": "https://github.com/mapbox/mapbox-gl-layer-groups",
             "description": "manages layer groups in Mapbox GL JS"
+        },
+        "expression-jamsession": {
+            "website": "https://github.com/mapbox/expression-jamsession/",
+            "description": md`converts [Mapbox Studio formulas](https://www.mapbox.com/help/studio-manual-styles/#use-a-formula) into [expressions](https://docs.mapbox.com/mapbox-gl-js/style-spec/#expressions)`
         },
         "simplespec-to-gl-style": {
             "website": "https://github.com/mapbox/simplespec-to-gl-style",
@@ -98,6 +134,14 @@ const plugins = {
         "mapbox-gl-sync-move": {
             "website": "https://github.com/mapbox/mapbox-gl-sync-move",
             "description": "syncs movement between two Mapbox GL JS maps"
+        },
+        "mapbox-choropleth": {
+            "website": "https://github.com/stevage/mapbox-choropleth",
+            "description": "create a choropleth layer from a CSV source and a geometry source"
+        },
+        "mapbox-gl-utils": {
+            "website": "https://github.com/stevage/mapbox-gl-utils",
+            "description": "manage layers, sources and properties with syntactic sugar and convenience functions"
         }
     },
     "Development Tools": {

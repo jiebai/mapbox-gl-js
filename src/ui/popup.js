@@ -11,6 +11,7 @@ import { type Anchor, anchorTranslate, applyAnchorClass } from './anchor';
 
 import type Map from './map';
 import type {LngLatLike} from '../geo/lng_lat';
+import type {PointLike} from '@mapbox/point-geometry';
 
 const defaultOptions = {
     closeButton: true,
@@ -68,6 +69,7 @@ export type PopupOptions = {
  * @see [Display a popup](https://www.mapbox.com/mapbox-gl-js/example/popup/)
  * @see [Display a popup on hover](https://www.mapbox.com/mapbox-gl-js/example/popup-on-hover/)
  * @see [Display a popup on click](https://www.mapbox.com/mapbox-gl-js/example/popup-on-click/)
+ * @see [Attach a popup to a marker instance](https://www.mapbox.com/mapbox-gl-js/example/set-popup/)
  */
 export default class Popup extends Evented {
     _map: Map;
@@ -82,7 +84,7 @@ export default class Popup extends Evented {
     constructor(options: PopupOptions) {
         super();
         this.options = extend(Object.create(defaultOptions), options);
-        bindAll(['_update', '_onClickClose'], this);
+        bindAll(['_update', '_onClickClose', 'remove'], this);
     }
 
     /**
@@ -97,6 +99,7 @@ export default class Popup extends Evented {
         if (this.options.closeOnClick) {
             this._map.on('click', this._onClickClose);
         }
+        this._map.on('remove', this.remove);
         this._update();
 
         /**
@@ -141,6 +144,7 @@ export default class Popup extends Evented {
         if (this._map) {
             this._map.off('move', this._update);
             this._map.off('click', this._onClickClose);
+            this._map.off('remove', this.remove);
             delete this._map;
         }
 
